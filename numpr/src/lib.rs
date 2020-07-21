@@ -1,3 +1,7 @@
+mod board;
+
+pub use board::Board;
+
 #[cfg(test)]
 mod tests {
     #[test]
