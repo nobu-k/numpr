@@ -7,14 +7,26 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(n: &[u8]) -> Board {
+    pub fn new(n: &[u8]) -> Result<Board, String> {
         if n.len() != SIZE {
-            panic!("slice must have length of 9: len = {}", n.len());
+            return Err(format!(
+                "slice must have length of {}: len = {}",
+                SIZE,
+                n.len()
+            ));
         }
 
         let mut b = [0; SIZE];
         b.copy_from_slice(n);
-        return Board { numbers: b };
+        if let Some((p, v)) = b.iter().enumerate().find(|(_, &v)| v > 9) {
+            return Err(format!(
+                "invalid value at ({}, {}): {}",
+                p % WIDTH,
+                p / HEIGHT,
+                v
+            ));
+        }
+        return Ok(Board { numbers: b });
     }
 
     pub fn get(&self, x: usize, y: usize) -> Option<u8> {
@@ -36,21 +48,29 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "slice must have length of 81")]
     fn empty() {
-        Board::new(&[]);
+        Board::new(&[]).unwrap();
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "slice must have length of 81")]
     fn too_short() {
-        Board::new(&[0; SIZE - 1]);
+        Board::new(&[0; SIZE - 1]).unwrap();
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "slice must have length of 81")]
     fn too_long() {
-        Board::new(&[0; SIZE + 1]);
+        Board::new(&[0; SIZE + 1]).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid value at (2, 1)")]
+    fn invalid_value() {
+        let mut n = [0; SIZE];
+        n[11] = 10;
+        Board::new(&n).unwrap();
     }
 
     #[test]
@@ -59,7 +79,7 @@ mod tests {
             .map(|_| (rand::random::<f64>() * 10.) as u8)
             .collect();
 
-        let b = Board::new(&n);
+        let b = Board::new(&n).unwrap();
         assert_eq!(b.numbers.len(), SIZE);
         assert!(b.numbers.iter().eq(n.iter()));
 
@@ -77,7 +97,7 @@ mod tests {
 
     #[test]
     fn get_out_of_bounds() {
-        let b = Board::new(&[1; SIZE]);
+        let b = Board::new(&[1; SIZE]).unwrap();
 
         assert_eq!(Some(1), b.get(0, 0));
         assert_eq!(None, b.get(WIDTH, 0));
