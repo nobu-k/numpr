@@ -55,7 +55,9 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let n: Vec<u8> = (1..=SIZE).map(|i| (i * 2) as u8).collect();
+        let n: Vec<u8> = (1..=SIZE)
+            .map(|_| (rand::random::<f64>() * 10.) as u8)
+            .collect();
 
         let b = Board::new(&n);
         assert_eq!(b.numbers.len(), SIZE);
