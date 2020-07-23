@@ -41,6 +41,17 @@ impl Board {
             Some(v)
         }
     }
+
+    pub fn set(&mut self, x: usize, y: usize, n: u8) -> Result<(), String> {
+        if x >= WIDTH || y >= HEIGHT {
+            return Err(format!("index out of bounds: ({}, {})", x, y));
+        }
+        if n > 9 {
+            return Err(format!("invalid value: {}", n));
+        }
+        self.numbers[y * WIDTH + x] = n;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -83,8 +94,8 @@ mod tests {
         assert_eq!(b.numbers.len(), SIZE);
         assert!(b.numbers.iter().eq(n.iter()));
 
-        for x in 0..9 {
-            for y in 0..9 {
+        for y in 0..HEIGHT {
+            for x in 0..WIDTH {
                 let expected = n[y * HEIGHT + x];
                 if let Some(v) = b.get(x, y) {
                     assert_eq!(n[y * HEIGHT + x], v);
@@ -104,5 +115,42 @@ mod tests {
         assert_eq!(None, b.get(1000, 0));
         assert_eq!(None, b.get(0, HEIGHT));
         assert_eq!(None, b.get(0, 1000));
+    }
+
+    #[test]
+    fn set() {
+        let mut b = Board::new(&[1; SIZE]).unwrap();
+        b.set(1, 2, 3).unwrap();
+        assert_eq!(Some(3), b.get(1, 2));
+        b.set(1, 2, 9).unwrap();
+        assert_eq!(Some(9), b.get(1, 2));
+        b.set(1, 2, 0).unwrap();
+        assert_eq!(None, b.get(1, 2));
+
+        for y in 0..HEIGHT {
+            for x in 0..WIDTH {
+                let n = (rand::random::<f64>() * 10.) as u8;
+                b.set(x, y, n).unwrap();
+                if n == 0 {
+                    assert_eq!(None, b.get(x, y));
+                } else {
+                    assert_eq!(Some(n), b.get(x, y));
+                }
+            }
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "index out of bounds: (3, 10)")]
+    fn set_out_of_bounds() {
+        let mut b = Board::new(&[1; SIZE]).unwrap();
+        b.set(3, 10, 1).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid value: 10")]
+    fn set_invalid_value() {
+        let mut b = Board::new(&[1; SIZE]).unwrap();
+        b.set(2, 3, 10).unwrap();
     }
 }
