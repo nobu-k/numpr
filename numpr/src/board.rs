@@ -45,6 +45,14 @@ impl Board {
         self.numbers[pt.index()] = n;
         Ok(())
     }
+
+    pub fn iter(&self) -> Iter {
+        Iter {
+            x: 0,
+            y: 0,
+            b: self,
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -71,6 +79,33 @@ impl Pt {
 
     fn index(&self) -> usize {
         self.y * HEIGHT + self.x
+    }
+}
+
+pub struct Iter<'a> {
+    x: usize,
+    y: usize,
+    b: &'a Board,
+}
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = (Pt, Option<u8>);
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.y == HEIGHT {
+            return None;
+        }
+
+        let pt = Pt {
+            x: self.x,
+            y: self.y,
+        };
+
+        self.x += 1;
+        if self.x == WIDTH {
+            self.x = 0;
+            self.y += 1;
+        }
+        Some((pt, self.b.get(pt)))
     }
 }
 
@@ -114,15 +149,14 @@ mod tests {
         assert_eq!(b.numbers.len(), SIZE);
         assert!(b.numbers.iter().eq(n.iter()));
 
-        for y in 0..HEIGHT {
-            for x in 0..WIDTH {
-                let expected = n[y * HEIGHT + x];
-                if let Some(v) = b.get(Pt::new(x, y).unwrap()) {
-                    assert_eq!(n[y * HEIGHT + x], v);
-                } else {
-                    assert_eq!(expected, 0);
-                }
+        for (p, v) in b.iter() {
+            let expected = n[p.index()];
+            if let Some(num) = b.get(p) {
+                assert_eq!(n[p.index()], num);
+            } else {
+                assert_eq!(expected, 0);
             }
+            assert_eq!(v, b.get(p))
         }
     }
 
