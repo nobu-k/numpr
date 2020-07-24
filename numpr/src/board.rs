@@ -29,12 +29,8 @@ impl Board {
         return Ok(Board { numbers: b });
     }
 
-    pub fn get(&self, x: usize, y: usize) -> Option<u8> {
-        if x >= WIDTH || y >= HEIGHT {
-            return None;
-        }
-
-        let v = self.numbers[y * WIDTH + x];
+    pub fn get(&self, pt: Pt) -> Option<u8> {
+        let v = self.numbers[pt.index()];
         if v == 0 {
             None
         } else {
@@ -42,15 +38,39 @@ impl Board {
         }
     }
 
-    pub fn set(&mut self, x: usize, y: usize, n: u8) -> Result<(), String> {
-        if x >= WIDTH || y >= HEIGHT {
-            return Err(format!("index out of bounds: ({}, {})", x, y));
-        }
+    pub fn set(&mut self, pt: Pt, n: u8) -> Result<(), String> {
         if n > 9 {
             return Err(format!("invalid value: {}", n));
         }
-        self.numbers[y * WIDTH + x] = n;
+        self.numbers[pt.index()] = n;
         Ok(())
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Pt {
+    x: usize,
+    y: usize,
+}
+
+impl Pt {
+    pub fn new(x: usize, y: usize) -> Result<Self, String> {
+        if x >= WIDTH || y >= HEIGHT {
+            return Err(format!("index out of bounds: ({}, {})", x, y));
+        }
+        Ok(Pt { x, y })
+    }
+
+    pub fn x(&self) -> usize {
+        self.x
+    }
+
+    pub fn y(&self) -> usize {
+        self.y
+    }
+
+    fn index(&self) -> usize {
+        self.y * HEIGHT + self.x
     }
 }
 
@@ -97,7 +117,7 @@ mod tests {
         for y in 0..HEIGHT {
             for x in 0..WIDTH {
                 let expected = n[y * HEIGHT + x];
-                if let Some(v) = b.get(x, y) {
+                if let Some(v) = b.get(Pt::new(x, y).unwrap()) {
                     assert_eq!(n[y * HEIGHT + x], v);
                 } else {
                     assert_eq!(expected, 0);
@@ -107,50 +127,52 @@ mod tests {
     }
 
     #[test]
-    fn get_out_of_bounds() {
-        let b = Board::new(&[1; SIZE]).unwrap();
+    fn pt_get() {
+        let x = (rand::random::<f64>() * 9.) as usize;
+        let y = (rand::random::<f64>() * 9.) as usize;
+        let pt = Pt::new(x, y).unwrap();
+        assert_eq!(x, pt.x());
+        assert_eq!(y, pt.y());
+    }
 
-        assert_eq!(Some(1), b.get(0, 0));
-        assert_eq!(None, b.get(WIDTH, 0));
-        assert_eq!(None, b.get(1000, 0));
-        assert_eq!(None, b.get(0, HEIGHT));
-        assert_eq!(None, b.get(0, 1000));
+    #[test]
+    fn pt_out_of_bounds() {
+        assert!(Pt::new(0, 0).is_ok());
+        assert!(Pt::new(WIDTH, 0).is_err());
+        assert!(Pt::new(1000, 0).is_err());
+        assert!(Pt::new(0, HEIGHT).is_err());
+        assert!(Pt::new(0, 1000).is_err());
     }
 
     #[test]
     fn set() {
         let mut b = Board::new(&[1; SIZE]).unwrap();
-        b.set(1, 2, 3).unwrap();
-        assert_eq!(Some(3), b.get(1, 2));
-        b.set(1, 2, 9).unwrap();
-        assert_eq!(Some(9), b.get(1, 2));
-        b.set(1, 2, 0).unwrap();
-        assert_eq!(None, b.get(1, 2));
+        let pt = Pt::new(1, 2).unwrap();
+        b.set(pt, 3).unwrap();
+        assert_eq!(Some(3), b.get(pt));
+        b.set(pt, 9).unwrap();
+        assert_eq!(Some(9), b.get(pt));
+        b.set(pt, 0).unwrap();
+        assert_eq!(None, b.get(pt));
 
         for y in 0..HEIGHT {
             for x in 0..WIDTH {
                 let n = (rand::random::<f64>() * 10.) as u8;
-                b.set(x, y, n).unwrap();
+                let pt = Pt::new(x, y).unwrap();
+                b.set(pt, n).unwrap();
                 if n == 0 {
-                    assert_eq!(None, b.get(x, y));
+                    assert_eq!(None, b.get(pt));
                 } else {
-                    assert_eq!(Some(n), b.get(x, y));
+                    assert_eq!(Some(n), b.get(pt));
                 }
             }
         }
     }
 
     #[test]
-    #[should_panic(expected = "index out of bounds: (3, 10)")]
-    fn set_out_of_bounds() {
-        let mut b = Board::new(&[1; SIZE]).unwrap();
-        b.set(3, 10, 1).unwrap();
-    }
-
-    #[test]
     #[should_panic(expected = "invalid value: 10")]
     fn set_invalid_value() {
         let mut b = Board::new(&[1; SIZE]).unwrap();
-        b.set(2, 3, 10).unwrap();
+        b.set(Pt::new(2, 3).unwrap(), 10).unwrap();
     }
 }
