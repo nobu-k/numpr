@@ -80,7 +80,7 @@ impl Board {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Pt {
     x: usize,
     y: usize,
