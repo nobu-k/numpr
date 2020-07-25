@@ -48,12 +48,7 @@ impl Board {
 
     pub fn iter(&self) -> Iter {
         Iter {
-            pt: PtIter {
-                x: 0,
-                y: 0,
-                i: 0,
-                mode: ScanMode::All,
-            },
+            pt: PtIter::all(),
             b: self,
         }
     }
@@ -98,6 +93,44 @@ struct PtIter {
     y: usize,
     i: usize,
     mode: ScanMode,
+}
+
+impl PtIter {
+    fn col(y: usize) -> Self {
+        Self {
+            x: 0,
+            y,
+            i: 0,
+            mode: ScanMode::Col,
+        }
+    }
+
+    fn row(x: usize) -> Self {
+        Self {
+            x,
+            y: 0,
+            i: 0,
+            mode: ScanMode::Row,
+        }
+    }
+
+    fn block(pt: Pt) -> Self {
+        Self {
+            x: pt.x / 3 * 3,
+            y: pt.y / 3 * 3,
+            i: 0,
+            mode: ScanMode::Block,
+        }
+    }
+
+    fn all() -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            i: 0,
+            mode: ScanMode::All,
+        }
+    }
 }
 
 impl Iterator for PtIter {
