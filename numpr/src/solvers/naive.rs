@@ -1,4 +1,4 @@
-use crate::board::Pt;
+use crate::pt::Pt;
 use crate::Board;
 use crate::Solver;
 

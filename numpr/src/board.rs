@@ -1,6 +1,5 @@
-const WIDTH: usize = 9;
-const HEIGHT: usize = 9;
-const SIZE: usize = WIDTH * HEIGHT;
+use crate::consts::*;
+use crate::pt::{Pt, PtIter};
 
 #[derive(Copy, Clone)]
 pub struct Board {
@@ -55,8 +54,8 @@ impl Board {
         // TODO: see if there's any performance difference between this and
         // col.all(&pred) && row.all && block.all
         self.get(pt).is_none()
-            && PtIter::col(pt.y)
-                .chain(PtIter::row(pt.x))
+            && PtIter::col(pt)
+                .chain(PtIter::row(pt))
                 .chain(PtIter::block(pt))
                 .all(|p| self.get(p) != Some(n))
     }
@@ -77,111 +76,6 @@ impl Board {
             pt: PtIter::all_after(pt),
             b: self,
         }
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct Pt {
-    x: usize,
-    y: usize,
-}
-
-impl Pt {
-    pub fn new(x: usize, y: usize) -> Result<Self, String> {
-        if x >= WIDTH || y >= HEIGHT {
-            return Err(format!("index out of bounds: ({}, {})", x, y));
-        }
-        Ok(Pt { x, y })
-    }
-
-    pub fn x(&self) -> usize {
-        self.x
-    }
-
-    pub fn y(&self) -> usize {
-        self.y
-    }
-
-    fn index(&self) -> usize {
-        self.y * HEIGHT + self.x
-    }
-}
-
-enum ScanMode {
-    Col,
-    Row,
-    Block,
-    All,
-}
-
-struct PtIter {
-    x: usize,
-    y: usize,
-    i: usize,
-    mode: ScanMode,
-}
-
-impl PtIter {
-    fn col(y: usize) -> Self {
-        Self {
-            x: 0,
-            y,
-            i: 0,
-            mode: ScanMode::Col,
-        }
-    }
-
-    fn row(x: usize) -> Self {
-        Self {
-            x,
-            y: 0,
-            i: 0,
-            mode: ScanMode::Row,
-        }
-    }
-
-    fn block(pt: Pt) -> Self {
-        Self {
-            x: pt.x / 3 * 3,
-            y: pt.y / 3 * 3,
-            i: 0,
-            mode: ScanMode::Block,
-        }
-    }
-
-    fn all() -> Self {
-        Self {
-            x: 0,
-            y: 0,
-            i: 0,
-            mode: ScanMode::All,
-        }
-    }
-
-    fn all_after(pt: Pt) -> Self {
-        Self {
-            x: 0,
-            y: 0,
-            i: pt.y * WIDTH + pt.x + 1,
-            mode: ScanMode::All,
-        }
-    }
-}
-
-impl Iterator for PtIter {
-    type Item = Pt;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        use ScanMode::*;
-        let (x, y) = match self.mode {
-            Col if self.i < WIDTH => (self.i, self.y),
-            Row if self.i < HEIGHT => (self.x, self.i),
-            Block if self.i < 9 => (self.x + self.i % 3, self.y + self.i / 3),
-            All if self.i < SIZE => (self.i % WIDTH, self.i / WIDTH),
-            _ => return None,
-        };
-        self.i += 1;
-        Some(Pt { x, y })
     }
 }
 
