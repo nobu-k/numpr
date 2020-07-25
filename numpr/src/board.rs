@@ -65,6 +65,36 @@ impl Board {
         Candidates::new(self, pt, random)
     }
 
+    pub fn validate(&self) -> Result<(), String> {
+        let convert = |pt| {
+            let it = Iter { pt, b: self };
+            it.map(|(_, n)| n.unwrap_or(0))
+        };
+
+        // TODO: return more detailed error information
+
+        // Check if each col, row, and block contains 1-9
+        for i in 0..9 {
+            self.validate_iter(convert(PtIter::col(Pt::new(i, 0).unwrap())))?;
+            self.validate_iter(convert(PtIter::row(Pt::new(0, i).unwrap())))?;
+            self.validate_iter(convert(PtIter::block(
+                Pt::new(i % BLOCK_WIDTH, i / BLOCK_WIDTH).unwrap(),
+            )))?;
+        }
+        Ok(())
+    }
+
+    fn validate_iter(&self, it: impl Iterator<Item = u8>) -> Result<(), String> {
+        let mask = it.map(|n| 1u32 << n).fold(0, |a, b| a | b);
+        if mask == 0b11_1111_1110 {
+            Ok(())
+        } else {
+            Err("wrong answer".to_string())
+        }
+
+        // TODO: this can be changed to (mask == 0b1_1111_1110).then_some(()).ok_or(Err(...))
+    }
+
     pub fn iter(&self) -> Iter {
         Iter {
             pt: PtIter::all(),
@@ -217,5 +247,11 @@ mod tests {
     fn candidates() {
         let b = Board::default();
         assert!((1..=9).eq(b.candidates(Pt::new(0, 0).unwrap(), false).into_iter()));
+    }
+
+    #[test]
+    fn validate_default() {
+        let b = Board::default();
+        assert!(b.validate().is_err());
     }
 }

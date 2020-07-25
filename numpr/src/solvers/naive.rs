@@ -59,7 +59,7 @@ mod tests {
         let s = NaiveSolver::new();
 
         let b = s.solve(&b, false).unwrap();
-        assert!(b.iter().all(|(_, n)| n.is_some()));
+        b.validate().unwrap();
 
         let s = NaiveSolver::new();
         let b2 = s.solve(&b, false).unwrap(); // To cover None case in solve
@@ -72,6 +72,6 @@ mod tests {
         let s = NaiveSolver::new();
 
         let b = s.solve(&b, true).unwrap();
-        assert!(b.iter().all(|(_, n)| n.is_some()));
+        b.validate().unwrap();
     }
 }
