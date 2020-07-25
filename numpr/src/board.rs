@@ -48,7 +48,12 @@ impl Board {
 
     pub fn iter(&self) -> Iter {
         Iter {
-            pt: PtIter { x: 0, y: 0 },
+            pt: PtIter {
+                x: 0,
+                y: 0,
+                i: 0,
+                mode: ScanMode::All,
+            },
             b: self,
         }
     }
@@ -81,30 +86,34 @@ impl Pt {
     }
 }
 
+enum ScanMode {
+    Col,
+    Row,
+    Block,
+    All,
+}
+
 struct PtIter {
     x: usize,
     y: usize,
+    i: usize,
+    mode: ScanMode,
 }
 
 impl Iterator for PtIter {
     type Item = Pt;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.y == HEIGHT {
-            return None;
-        }
-
-        let pt = Pt {
-            x: self.x,
-            y: self.y,
+        use ScanMode::*;
+        let (x, y) = match self.mode {
+            Col if self.i < WIDTH => (self.i, self.y),
+            Row if self.i < HEIGHT => (self.x, self.i),
+            Block if self.i < 9 => (self.x + self.i % 3, self.y + self.i / 3),
+            All if self.i < SIZE => (self.i % WIDTH, self.i / WIDTH),
+            _ => return None,
         };
-
-        self.x += 1;
-        if self.x == WIDTH {
-            self.x = 0;
-            self.y += 1;
-        }
-        Some(pt)
+        self.i += 1;
+        Some(Pt { x, y })
     }
 }
 
