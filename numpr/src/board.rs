@@ -48,8 +48,7 @@ impl Board {
 
     pub fn iter(&self) -> Iter {
         Iter {
-            x: 0,
-            y: 0,
+            pt: PtIter { x: 0, y: 0 },
             b: self,
         }
     }
@@ -82,14 +81,14 @@ impl Pt {
     }
 }
 
-pub struct Iter<'a> {
+struct PtIter {
     x: usize,
     y: usize,
-    b: &'a Board,
 }
 
-impl<'a> Iterator for Iter<'a> {
-    type Item = (Pt, Option<u8>);
+impl Iterator for PtIter {
+    type Item = Pt;
+
     fn next(&mut self) -> Option<Self::Item> {
         if self.y == HEIGHT {
             return None;
@@ -105,6 +104,19 @@ impl<'a> Iterator for Iter<'a> {
             self.x = 0;
             self.y += 1;
         }
+        Some(pt)
+    }
+}
+
+pub struct Iter<'a> {
+    pt: PtIter,
+    b: &'a Board,
+}
+
+impl<'a> Iterator for Iter<'a> {
+    type Item = (Pt, Option<u8>);
+    fn next(&mut self) -> Option<Self::Item> {
+        let pt = self.pt.next()?;
         Some((pt, self.b.get(pt)))
     }
 }
