@@ -162,12 +162,7 @@ mod tests {
         assert!(b.numbers.iter().eq(n.iter()));
 
         for (p, v) in b.iter() {
-            let expected = n[p.index()];
-            if let Some(num) = b.get(p) {
-                assert_eq!(n[p.index()], num);
-            } else {
-                assert_eq!(expected, 0);
-            }
+            assert_eq!(n[p.index()], v.unwrap_or(0));
             assert_eq!(v, b.get(p))
         }
     }
