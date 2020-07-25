@@ -49,6 +49,8 @@ mod tests {
     fn solve() {
         let b = Board::default();
         let mut s = NaiveSolver {};
-        s.solve(&b, false).unwrap();
+
+        let b = s.solve(&b, false).unwrap();
+        s.solve(&b, false).unwrap(); // To cover None case in solve
     }
 }
