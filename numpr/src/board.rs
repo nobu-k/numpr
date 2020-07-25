@@ -57,7 +57,7 @@ impl Board {
             && PtIter::col(pt)
                 .chain(PtIter::row(pt))
                 .chain(PtIter::block(pt))
-                .all(|p| self.get(p) != Some(n))
+                .all(|p| self.get(p) != Some(n)) // TODO: change this to raw get
     }
 
     pub fn candidates(&self, pt: Pt) -> Candidates {
@@ -114,6 +114,9 @@ impl<'a> Iterator for Candidates<'a> {
         None
     }
 }
+
+// TODO: implement a candidate iterator with [u8; 9] and its slice &[u8] to
+// avoid allocation (after setting up benchmark).
 
 #[cfg(test)]
 mod tests {
