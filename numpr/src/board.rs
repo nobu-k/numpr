@@ -2,6 +2,7 @@ const WIDTH: usize = 9;
 const HEIGHT: usize = 9;
 const SIZE: usize = WIDTH * HEIGHT;
 
+#[derive(Copy, Clone)]
 pub struct Board {
     numbers: [u8; SIZE], // TODO: use 4 bits per square
 }
@@ -29,6 +30,10 @@ impl Board {
         return Ok(Board { numbers: b });
     }
 
+    pub fn default() -> Self {
+        Self { numbers: [0; SIZE] }
+    }
+
     pub fn get(&self, pt: Pt) -> Option<u8> {
         let v = self.numbers[pt.index()];
         if v == 0 {
@@ -46,15 +51,36 @@ impl Board {
         Ok(())
     }
 
+    pub fn placeable(&self, pt: Pt, n: u8) -> bool {
+        // TODO: see if there's any performance difference between this and
+        // col.all(&pred) && row.all && block.all
+        self.get(pt).is_none()
+            && PtIter::col(pt.y)
+                .chain(PtIter::row(pt.x))
+                .chain(PtIter::block(pt))
+                .all(|p| self.get(p) != Some(n))
+    }
+
+    pub fn candidates(&self, pt: Pt) -> Candidates {
+        Candidates { b: self, n: 1, pt }
+    }
+
     pub fn iter(&self) -> Iter {
         Iter {
             pt: PtIter::all(),
             b: self,
         }
     }
+
+    pub fn iter_after(&self, pt: Pt) -> Iter {
+        Iter {
+            pt: PtIter::all_after(pt),
+            b: self,
+        }
+    }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Pt {
     x: usize,
     y: usize,
@@ -131,6 +157,15 @@ impl PtIter {
             mode: ScanMode::All,
         }
     }
+
+    fn all_after(pt: Pt) -> Self {
+        Self {
+            x: 0,
+            y: 0,
+            i: pt.y * WIDTH + pt.x + 1,
+            mode: ScanMode::All,
+        }
+    }
 }
 
 impl Iterator for PtIter {
@@ -160,6 +195,29 @@ impl<'a> Iterator for Iter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let pt = self.pt.next()?;
         Some((pt, self.b.get(pt)))
+    }
+}
+
+pub struct Candidates<'a> {
+    pt: Pt,
+    n: u8,
+    b: &'a Board,
+}
+
+impl<'a> Iterator for Candidates<'a> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // TODO: replace this implementation by precomputing possible numbers
+        // by bitwise or after setting up benchmarks.
+        while self.n <= 9 {
+            let n = self.n;
+            self.n += 1;
+            if self.b.placeable(self.pt, n) {
+                return Some(n);
+            }
+        }
+        None
     }
 }
 

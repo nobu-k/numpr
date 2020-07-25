@@ -3,6 +3,7 @@ mod solver;
 mod solvers;
 
 pub use board::Board;
+pub use solver::Solver;
 pub use solvers::NaiveSolver;
 
 #[cfg(test)]
