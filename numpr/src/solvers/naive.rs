@@ -14,14 +14,18 @@ impl NaiveSolver {
     }
 
     fn recurse(&self, board: &Board, pt: Pt, random: bool) -> Result<Board, String> {
+        // TODO: Because candidates is now independent of Board, board.set can
+        // directly be called in the for loop below. Because of that, there's
+        // no need to make a copy here. Try it after setting up benchmark.
         let mut b = *board;
+
         // TODO: next can be cached or precomputed.
         // For example, pt can be &[Pt] that contains all empty grids.
         // then recurse with &pt[1..] might be faster than computing this every time.
         let next = board.iter_after(pt).find(empty_grid);
 
         // TODO: shuffle candidates when random is true.
-        for n in board.candidates(pt) {
+        for n in board.candidates(pt, random) {
             b.set(pt, n).unwrap();
             if next.is_none() {
                 return Ok(b);
@@ -60,5 +64,14 @@ mod tests {
         let s = NaiveSolver::new();
         let b2 = s.solve(&b, false).unwrap(); // To cover None case in solve
         assert!(b.iter().eq(b2.iter()));
+    }
+
+    #[test]
+    fn solve_random() {
+        let b = Board::default();
+        let s = NaiveSolver::new();
+
+        let b = s.solve(&b, true).unwrap();
+        assert!(b.iter().all(|(_, n)| n.is_some()));
     }
 }

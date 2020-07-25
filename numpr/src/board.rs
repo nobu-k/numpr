@@ -1,5 +1,6 @@
 use crate::consts::*;
 use crate::pt::{Pt, PtIter};
+use rand::prelude::*;
 
 #[derive(Copy, Clone)]
 pub struct Board {
@@ -60,8 +61,8 @@ impl Board {
                 .all(|p| self.get(p) != Some(n)) // TODO: change this to raw get
     }
 
-    pub fn candidates(&self, pt: Pt) -> Candidates {
-        Candidates { b: self, n: 1, pt }
+    pub fn candidates(&self, pt: Pt, random: bool) -> impl IntoIterator<Item = u8> {
+        Candidates::new(self, pt, random)
     }
 
     pub fn iter(&self) -> Iter {
@@ -92,31 +93,29 @@ impl<'a> Iterator for Iter<'a> {
     }
 }
 
-pub struct Candidates<'a> {
-    pt: Pt,
-    n: u8,
-    b: &'a Board,
+struct Candidates {
+    vec: Vec<u8>,
 }
 
-impl<'a> Iterator for Candidates<'a> {
-    type Item = u8;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        // TODO: replace this implementation by precomputing possible numbers
-        // by bitwise or after setting up benchmarks.
-        while self.n <= 9 {
-            let n = self.n;
-            self.n += 1;
-            if self.b.placeable(self.pt, n) {
-                return Some(n);
-            }
+impl Candidates {
+    fn new(b: &Board, pt: Pt, random: bool) -> Self {
+        // TODO: use [u8: 9] instead to avoid unnecessary allocations
+        let mut v: Vec<u8> = (1..=9).filter(|&n| b.placeable(pt, n)).collect();
+        if random {
+            v.shuffle(&mut rand::thread_rng());
         }
-        None
+        Self { vec: v }
     }
 }
 
-// TODO: implement a candidate iterator with [u8; 9] and its slice &[u8] to
-// avoid allocation (after setting up benchmark).
+impl IntoIterator for Candidates {
+    type Item = u8;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.vec.into_iter()
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -212,5 +211,11 @@ mod tests {
     fn set_invalid_value() {
         let mut b = Board::new(&[1; SIZE]).unwrap();
         b.set(Pt::new(2, 3).unwrap(), 10).unwrap();
+    }
+
+    #[test]
+    fn candidates() {
+        let b = Board::default();
+        assert!((1..=9).eq(b.candidates(Pt::new(0, 0).unwrap(), false).into_iter()));
     }
 }
