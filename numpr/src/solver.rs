@@ -1,7 +1,7 @@
 use super::board::Board;
 
 pub trait Solver {
-    fn solve(&mut self, board: &Board, random: bool) -> Result<Board, String>;
+    fn solve(self, board: &Board, random: bool) -> Result<Board, String>;
 }
 
 /* TODO: can this be abstracted like this?

@@ -9,6 +9,10 @@ fn empty_grid((_, n): &(Pt, Option<u8>)) -> bool {
 }
 
 impl NaiveSolver {
+    pub fn new() -> Self {
+        Self {}
+    }
+
     fn recurse(&self, board: &Board, pt: Pt, random: bool) -> Result<Board, String> {
         let mut b = *board;
         // TODO: next can be cached or precomputed.
@@ -33,7 +37,7 @@ impl NaiveSolver {
 }
 
 impl Solver for NaiveSolver {
-    fn solve(&mut self, board: &Board, random: bool) -> Result<Board, String> {
+    fn solve(self, board: &Board, random: bool) -> Result<Board, String> {
         match &mut board.iter().find(empty_grid) {
             Some((pt, _)) => self.recurse(board, *pt, random),
             None => Ok(*board),
@@ -48,9 +52,12 @@ mod tests {
     #[test]
     fn solve() {
         let b = Board::default();
-        let mut s = NaiveSolver {};
+        let s = NaiveSolver::new();
 
         let b = s.solve(&b, false).unwrap();
-        s.solve(&b, false).unwrap(); // To cover None case in solve
+
+        let s = NaiveSolver::new();
+        let b2 = s.solve(&b, false).unwrap(); // To cover None case in solve
+        assert!(b.iter().eq(b2.iter()));
     }
 }
