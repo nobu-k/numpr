@@ -8,3 +8,10 @@ edition = "2018"
 
 [dependencies]
 rand = "*"
+
+[dev-dependencies]
+criterion = "*"
+
+[[bench]]
+name = "placer_benchmark"
+harness = false
