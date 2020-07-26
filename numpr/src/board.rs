@@ -52,13 +52,11 @@ impl Board {
     }
 
     pub fn placeable(&self, pt: Pt, n: u8) -> bool {
-        // TODO: see if there's any performance difference between this and
-        // col.all(&pred) && row.all && block.all
+        let f = |p| self.get(p) != Some(n); // TODO: replace with raw get
         self.get(pt).is_none()
-            && PtIter::col(pt)
-                .chain(PtIter::row(pt))
-                .chain(PtIter::block(pt))
-                .all(|p| self.get(p) != Some(n)) // TODO: change this to raw get
+            && PtIter::col(pt).all(f)
+            && PtIter::row(pt).all(f)
+            && PtIter::block(pt).all(f)
     }
 
     pub fn candidates(&self, pt: Pt, random: bool) -> impl IntoIterator<Item = u8> {
