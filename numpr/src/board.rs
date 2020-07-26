@@ -124,26 +124,38 @@ impl<'a> Iterator for Iter<'a> {
 }
 
 struct Candidates {
-    vec: Vec<u8>,
+    a: [u8; 9],
+    n: usize,
+    i: usize,
 }
 
 impl Candidates {
     fn new(b: &Board, pt: Pt, random: bool) -> Self {
-        // TODO: use [u8: 9] instead to avoid unnecessary allocations
-        let mut v: Vec<u8> = (1..=9).filter(|&n| b.placeable(pt, n)).collect();
-        if random {
-            v.shuffle(&mut rand::thread_rng());
+        let mut a = [1u8, 2, 3, 4, 5, 6, 7, 8, 9];
+        let mut n = 0;
+        for i in 0..9 {
+            a[n] = a[i];
+            if b.placeable(pt, a[i] as u8) {
+                n += 1;
+            }
         }
-        Self { vec: v }
+        if random {
+            a[..n].shuffle(&mut rand::thread_rng());
+        }
+        Self { a, n, i: 0 }
     }
 }
 
-impl IntoIterator for Candidates {
+impl Iterator for Candidates {
     type Item = u8;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.vec.into_iter()
+    fn next(&mut self) -> Option<u8> {
+        if self.i == self.n {
+            return None;
+        }
+        let c = self.a[self.i];
+        self.i += 1;
+        Some(c)
     }
 }
 
