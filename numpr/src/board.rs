@@ -43,6 +43,10 @@ impl Board {
         }
     }
 
+    fn raw_get(&self, pt: Pt) -> u8 {
+        self.numbers[pt.index()]
+    }
+
     pub fn set(&mut self, pt: Pt, n: u8) -> Result<(), String> {
         if n > 9 {
             return Err(format!("invalid value: {}", n));
@@ -52,8 +56,9 @@ impl Board {
     }
 
     pub fn placeable(&self, pt: Pt, n: u8) -> bool {
-        let f = |p| self.get(p) != Some(n); // TODO: replace with raw get
-        self.get(pt).is_none()
+        let f = |p| self.raw_get(p) != n;
+        n > 0
+            && self.raw_get(pt) == 0
             && PtIter::col(pt).all(f)
             && PtIter::row(pt).all(f)
             && PtIter::block(pt).all(f)
