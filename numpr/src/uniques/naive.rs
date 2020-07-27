@@ -63,7 +63,7 @@ mod tests {
         let b = Board::default();
         let mut b = NaiveSolver::new().solve(&b, true).unwrap();
 
-        let p = || (rand::random::<f64>() * 9. + 1.) as usize;
+        let p = || (rand::random::<f64>() * 9.) as usize;
         b.set(crate::pt::Pt::new(p(), p()).unwrap(), 0).unwrap();
 
         let u = NaiveUniquenessChecker::new();
