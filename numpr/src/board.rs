@@ -145,7 +145,7 @@ impl Candidates {
                 n += 1;
             }
         }
-        if random {
+        if random && n > 1 {
             a[..n].shuffle(&mut rand::thread_rng());
         }
         Self { a, n, i: 0 }
