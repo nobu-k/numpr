@@ -2,9 +2,12 @@ use crate::consts::*;
 use crate::pt::{Pt, PtIter};
 use rand::prelude::*;
 
+// Note: using 4-bits per grid didn't improve the performance at least for
+// NaiveSolver.
+
 #[derive(Copy, Clone)]
 pub struct Board {
-    numbers: [u8; SIZE], // TODO: use 4 bits per square
+    numbers: [u8; SIZE],
 }
 
 impl Board {
