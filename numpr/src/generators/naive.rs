@@ -52,13 +52,14 @@ impl Generator for NaiveGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::placer::Placer;
+    use crate::placers::NaivePlacer;
     use crate::solvers::NaiveSolver;
     use crate::uniques::NaiveUniquenessChecker;
 
     #[test]
     fn generate() {
-        let b = Board::default();
-        let b = NaiveSolver::new().solve(&b, true).unwrap();
+        let b = NaivePlacer::new().place(NaiveSolver::new()).unwrap();
         let g = NaiveGenerator::new(crate::consts::SIZE as u32)
             .generate(&b, || NaiveSolver::new(), || NaiveUniquenessChecker::new())
             .unwrap();

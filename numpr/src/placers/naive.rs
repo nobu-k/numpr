@@ -4,6 +4,12 @@ use crate::solver::Solver;
 
 pub struct NaivePlacer {}
 
+impl NaivePlacer {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl Placer for NaivePlacer {
     fn place(self, solver: impl Solver) -> Result<Board, String> {
         solver.solve(&Board::default(), true)
@@ -16,7 +22,7 @@ mod tests {
 
     #[test]
     fn place() {
-        let p = NaivePlacer {};
+        let p = NaivePlacer::new();
         let b = p.place(crate::NaiveSolver::new()).unwrap();
         b.validate().unwrap();
     }

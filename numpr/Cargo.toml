@@ -15,3 +15,7 @@ criterion = "*"
 [[bench]]
 name = "placer_benchmark"
 harness = false
+
+[[bench]]
+name = "generator_benchmark"
+harness = false
