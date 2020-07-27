@@ -20,7 +20,7 @@ pub use placers::NaivePlacer;
 pub use placers::PermutationPlacer;
 pub use pt::*;
 pub use solver::Solver;
-pub use solvers::NaiveSolver;
+pub use solvers::*;
 pub use unique::UniquenessChecker;
 pub use uniques::NaiveUniquenessChecker;
 

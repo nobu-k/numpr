@@ -25,6 +25,20 @@ pub fn generator(c: &mut Criterion) {
             solve(g);
         });
     });
+
+    c.bench_function("HeuristicSolver-And-Naive", |b| {
+        b.iter(|| {
+            let b = place();
+            let g = NaiveGenerator::new(black_box(81))
+                .generate(
+                    &b,
+                    || HeuristicSolver::new(),
+                    || NaiveUniquenessChecker::new(),
+                )
+                .unwrap();
+            solve(g);
+        });
+    });
 }
 
 criterion_group!(benches, generator);
