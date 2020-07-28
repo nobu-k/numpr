@@ -46,7 +46,7 @@ impl Board {
         }
     }
 
-    fn raw_get(&self, pt: Pt) -> u8 {
+    pub fn raw_get(&self, pt: Pt) -> u8 {
         self.numbers[pt.index()]
     }
 

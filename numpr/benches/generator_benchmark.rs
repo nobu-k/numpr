@@ -3,7 +3,7 @@ use numpr::*;
 
 fn place() -> Board {
     // TODO: replace this with the fastest implementation
-    NaivePlacer::new().place(NaiveSolver::new()).unwrap()
+    PermutationPlacer::new().place(NaiveSolver::new()).unwrap()
 }
 
 fn solve(b: Board) {

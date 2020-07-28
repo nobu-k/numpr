@@ -110,13 +110,45 @@ impl PermutationPlacer {
         }
         Ok(())
     }
+
+    // TODO: this make the performance 2000% worse somehow!!
+    // check why it happens.
+    fn fill_left_blocks(&self, b: &mut Board) -> Result<(), String> {
+        let rng = &mut rand::thread_rng();
+
+        // Fill the 1st col.
+        let mut mask = 0;
+        for y in 0..3 {
+            mask |= 1 << b.raw_get(Pt::new(0, y)?);
+        }
+        let mut init = [1u8, 2, 3, 4, 5, 6, 7, 8, 9];
+
+        // Remove numbers already used in the top block.
+        let mut k = 0;
+        for i in 0..9 {
+            init[k] = init[i];
+            if (mask & (1 << init[i])) == 0 {
+                k += 1;
+            }
+        }
+        init[..6].shuffle(rng);
+
+        // TODO: 0..1 ~ 0..2 are fine, but 0..3 or more makes it super slow
+        // Because of some operations in Board?
+        for y in 0..6 {
+            b.set(Pt::new(0, y + 3)?, init[y])?;
+        }
+
+        // TODO: fill remaining columns.
+        Ok(())
+    }
 }
 
 impl Placer for PermutationPlacer {
     fn place(self, solver: impl Solver) -> Result<Board, String> {
         let mut b = Board::default();
         self.fill_upper_blocks(&mut b)?;
-        // TODO: fill left blocks
+        self.fill_left_blocks(&mut b)?;
         solver.solve(&b, true)
     }
 }
