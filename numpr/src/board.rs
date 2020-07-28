@@ -59,6 +59,7 @@ impl Board {
     }
 
     fn placeable_masks(&self, pt: Pt) -> u16 {
+        // TODO: try to return [bool; 9]
         if self.raw_get(pt) != 0 {
             return 0;
         }
@@ -144,14 +145,12 @@ struct Candidates {
 
 impl Candidates {
     fn new(b: &Board, pt: Pt, random: bool) -> Self {
-        // TODO: Compute bit flags of the grid instead of checking other grids every time.
-        // Using bool array might be faster than bit operations.
         let masks = b.placeable_masks(pt);
-        let mut a = [1u8, 2, 3, 4, 5, 6, 7, 8, 9];
+        let mut a = [0u8; 9];
         let mut n = 0;
-        for i in 0..9 {
-            a[n] = a[i];
-            if (masks & (1 << a[i])) != 0 {
+        for i in 1..=9 {
+            a[n] = i;
+            if (masks & (1 << i)) != 0 {
                 n += 1;
             }
         }
