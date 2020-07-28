@@ -58,13 +58,20 @@ impl Board {
         Ok(())
     }
 
-    pub fn placeable(&self, pt: Pt, n: u8) -> bool {
-        let f = |p| self.raw_get(p) != n;
-        n > 0
-            && self.raw_get(pt) == 0
-            && PtIter::col(pt).all(f)
-            && PtIter::row(pt).all(f)
-            && PtIter::block(pt).all(f)
+    fn placeable_masks(&self, pt: Pt) -> u16 {
+        if self.raw_get(pt) != 0 {
+            return 0;
+        }
+
+        let mut mask = 0;
+        // TODO: try unchain
+        for p in PtIter::col(pt)
+            .chain(PtIter::row(pt))
+            .chain(PtIter::block(pt))
+        {
+            mask |= 1 << self.raw_get(p);
+        }
+        !mask
     }
 
     pub fn candidates(&self, pt: Pt, random: bool) -> impl IntoIterator<Item = u8> {
@@ -139,11 +146,12 @@ impl Candidates {
     fn new(b: &Board, pt: Pt, random: bool) -> Self {
         // TODO: Compute bit flags of the grid instead of checking other grids every time.
         // Using bool array might be faster than bit operations.
+        let masks = b.placeable_masks(pt);
         let mut a = [1u8, 2, 3, 4, 5, 6, 7, 8, 9];
         let mut n = 0;
         for i in 0..9 {
             a[n] = a[i];
-            if b.placeable(pt, a[i] as u8) {
+            if (masks & (1 << a[i])) != 0 {
                 n += 1;
             }
         }
