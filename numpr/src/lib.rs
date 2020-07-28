@@ -16,6 +16,7 @@ pub use generator::Generator;
 pub use generators::NaiveGenerator;
 pub use placer::Placer;
 pub use placers::NaivePlacer;
+pub use placers::PermutationPlacer;
 pub use pt::*;
 pub use solver::Solver;
 pub use solvers::NaiveSolver;
