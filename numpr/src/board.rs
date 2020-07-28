@@ -65,11 +65,13 @@ impl Board {
         }
 
         let mut mask = 0;
-        // TODO: try unchain
-        for p in PtIter::col(pt)
-            .chain(PtIter::row(pt))
-            .chain(PtIter::block(pt))
-        {
+        for p in PtIter::row(pt) {
+            mask |= 1 << self.raw_get(p);
+        }
+        for p in PtIter::block(pt) {
+            mask |= 1 << self.raw_get(p);
+        }
+        for p in PtIter::col(pt) {
             mask |= 1 << self.raw_get(p);
         }
         !mask
