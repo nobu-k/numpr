@@ -59,7 +59,7 @@ impl Board {
     }
 
     fn placeable_masks(&self, pt: Pt) -> u16 {
-        // TODO: try to return [bool; 9]
+        // Returning [bool; 10] was slower than bit masks.
         if self.raw_get(pt) != 0 {
             return 0;
         }
