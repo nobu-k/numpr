@@ -137,6 +137,8 @@ struct Candidates {
 
 impl Candidates {
     fn new(b: &Board, pt: Pt, random: bool) -> Self {
+        // TODO: Compute bit flags of the grid instead of checking other grids every time.
+        // Using bool array might be faster than bit operations.
         let mut a = [1u8, 2, 3, 4, 5, 6, 7, 8, 9];
         let mut n = 0;
         for i in 0..9 {
