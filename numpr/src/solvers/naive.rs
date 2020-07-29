@@ -14,12 +14,9 @@ impl NaiveSolver {
     }
 
     fn recurse(&self, b: &mut Board, pt: Pt, random: bool) -> Result<Board, String> {
-        // TODO: next can be cached or precomputed.
-        // For example, pt can be &[Pt] that contains all empty grids.
-        // then recurse with &pt[1..] might be faster than computing this every time.
+        // Note: precomputing pt and passing it as &[Pt] and [1..] was slower than the current code.
         let next = b.iter_after(pt).find(empty_grid);
 
-        // TODO: shuffle candidates when random is true.
         for n in b.candidates(pt, random) {
             b.set(pt, n).unwrap();
             if next.is_none() {
