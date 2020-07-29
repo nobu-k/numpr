@@ -7,6 +7,8 @@ use rand::prelude::*;
 
 pub struct PermutationPlacer {}
 
+// TODO: refactor methods
+
 impl PermutationPlacer {
     pub fn new() -> Self {
         Self {}
@@ -111,8 +113,6 @@ impl PermutationPlacer {
         Ok(())
     }
 
-    // TODO: this make the performance 2000% worse somehow!!
-    // check why it happens.
     fn fill_left_blocks(&self, b: &mut Board) -> Result<(), String> {
         let rng = &mut rand::thread_rng();
 
@@ -121,25 +121,102 @@ impl PermutationPlacer {
         for y in 0..3 {
             mask |= 1 << b.raw_get(Pt::new(0, y)?);
         }
-        let mut init = [1u8, 2, 3, 4, 5, 6, 7, 8, 9];
+        let mut init = [0u8; 9];
 
         // Remove numbers already used in the top block.
-        let mut k = 0;
-        for i in 0..9 {
-            init[k] = init[i];
-            if (mask & (1 << init[i])) == 0 {
+        let mut k = 3;
+        let mut begin = 0;
+        for i in 1u8..=9 {
+            if (mask & (1 << i)) == 0 {
+                init[k] = i;
                 k += 1;
+            } else {
+                init[begin] = i;
+                begin += 1;
             }
         }
-        init[..6].shuffle(rng);
+        init[3..].shuffle(rng);
 
-        // TODO: 0..1 ~ 0..2 are fine, but 0..3 or more makes it super slow
-        // Because of some operations in Board?
         for y in 0..6 {
-            b.set(Pt::new(0, y + 3)?, init[y])?;
+            b.set(Pt::new(0, y + 3)?, init[y + 3])?;
         }
 
-        // TODO: fill remaining columns.
+        // Shuffle within each blocks for further use
+        init[0..3].shuffle(rng);
+        init[3..6].shuffle(rng);
+        init[6..9].shuffle(rng);
+
+        // Check duplicates between the 1st col of the middle block and the 2nd
+        // col of the top block. This number works as "n" in fill_upper_blocks.
+        // Because 3 - n numbers in the middle block must be placed in the
+        // bottom block, the bottom block needs to take n numbers from the top
+        // block. As a result, the middle block has to get 3 - n numbers from
+        // the top and n numbers from the bottom.
+        let mut n = 0;
+        let mask = (1 << b.raw_get(Pt::new(1, 0)?))
+            | (1 << b.raw_get(Pt::new(1, 1)?))
+            | (1 << b.raw_get(Pt::new(1, 2)?));
+        for y in 3..6 {
+            if mask & (1 << init[y]) != 0 {
+                n += 1;
+            }
+        }
+        let n = n;
+
+        // 2nd col of middle block
+        let mut block = [0u8; 3];
+        let mut k = 0;
+        for i in 0..n {
+            loop {
+                let v = init[k + 6];
+                k += 1;
+                if mask & (1 << v) == 0 {
+                    block[i] = v;
+                    break;
+                }
+            }
+        }
+        for i in n..3 {
+            block[i] = init[i];
+        }
+        block[..].shuffle(rng);
+        for y in 0..3 {
+            b.set(Pt::new(1, y + 3)?, block[y])?;
+        }
+
+        // 2nd col of third block
+        let mut block = [0u8; 3];
+        for i in 0..n {
+            block[i] = init[i];
+        }
+        let mut k = 0;
+        for i in n..3 {
+            loop {
+                let v = init[k + 3];
+                k += 1;
+                if mask & (1 << v) == 0 {
+                    block[i] = v;
+                    break;
+                }
+            }
+        }
+        block[..].shuffle(rng);
+        for y in 0..3 {
+            b.set(Pt::new(1, y + 6)?, block[y])?;
+        }
+
+        // FIXME: Filling the 3rd col somehow slows down NaiveSolver. Also, only
+        // filling the 1st col slows it down 2000%. Investigate why.
+
+        /*
+        // Fill the 3rd col with Board::candidates.
+        for (i, c) in b.candidates(Pt::new(2, 3)?, true).into_iter().enumerate() {
+            b.set(Pt::new(2, i + 3)?, c)?;
+        }
+        for (i, c) in b.candidates(Pt::new(2, 6)?, true).into_iter().enumerate() {
+            b.set(Pt::new(2, i + 6)?, c)?;
+        }
+        */
         Ok(())
     }
 }
