@@ -1,5 +1,6 @@
 mod board;
 mod consts;
+mod error;
 mod generator;
 mod generators;
 mod placer;

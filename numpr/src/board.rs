@@ -1,4 +1,5 @@
 use crate::consts::*;
+use crate::error::{NumprError, NumprResult};
 use crate::pt::{Pt, PtIter};
 use rand::prelude::*;
 
@@ -11,24 +12,15 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(n: &[u8]) -> Result<Board, String> {
+    pub fn new(n: &[u8]) -> NumprResult<Board> {
         if n.len() != SIZE {
-            return Err(format!(
-                "slice must have length of {}: len = {}",
-                SIZE,
-                n.len()
-            ));
+            return NumprError::invalid_board_length(n.len());
         }
 
         let mut b = [0; SIZE];
         b.copy_from_slice(n);
         if let Some((p, v)) = b.iter().enumerate().find(|(_, &v)| v > 9) {
-            return Err(format!(
-                "invalid value at ({}, {}): {}",
-                p % WIDTH,
-                p / HEIGHT,
-                v
-            ));
+            return NumprError::invalid_value(Pt::new(p % WIDTH, p / HEIGHT).unwrap(), *v);
         }
         return Ok(Board { numbers: b });
     }
@@ -50,9 +42,9 @@ impl Board {
         self.numbers[pt.index()]
     }
 
-    pub fn set(&mut self, pt: Pt, n: u8) -> Result<(), String> {
+    pub fn set(&mut self, pt: Pt, n: u8) -> NumprResult<()> {
         if n > 9 {
-            return Err(format!("invalid value: {}", n));
+            return NumprError::invalid_value(pt, n);
         }
         self.numbers[pt.index()] = n;
         Ok(())
@@ -81,7 +73,7 @@ impl Board {
         Candidates::new(self, pt, random)
     }
 
-    pub fn validate(&self) -> Result<(), String> {
+    pub fn validate(&self) -> NumprResult<()> {
         let convert = |pt| {
             let it = Iter { pt, b: self };
             it.map(|(_, n)| n.unwrap_or(0))
@@ -100,12 +92,13 @@ impl Board {
         Ok(())
     }
 
-    fn validate_iter(&self, it: impl Iterator<Item = u8>) -> Result<(), String> {
+    fn validate_iter(&self, it: impl Iterator<Item = u8>) -> NumprResult<()> {
         let mask = it.map(|n| 1u32 << n).fold(0, |a, b| a | b);
         if mask == 0b11_1111_1110 {
             Ok(())
         } else {
-            Err("wrong answer".to_string())
+            // TODO: add more error information
+            NumprError::wrong_answer()
         }
 
         // TODO: this can be changed to (mask == 0b1_1111_1110).then_some(()).ok_or(Err(...))
@@ -179,31 +172,47 @@ impl Iterator for Candidates {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use NumprError::*;
 
     #[test]
-    #[should_panic(expected = "slice must have length of 81")]
     fn empty() {
-        Board::new(&[]).unwrap();
+        // unwrap_err cannot be used because Board doesn't implement Debug
+        // because of the long array (numbers) it has.
+        if let Err(InvalidBoardLength(len)) = Board::new(&[]) {
+            assert_eq!(len, 0);
+        } else {
+            panic!("unexpected result");
+        }
     }
 
     #[test]
-    #[should_panic(expected = "slice must have length of 81")]
     fn too_short() {
-        Board::new(&[0; SIZE - 1]).unwrap();
+        if let Err(InvalidBoardLength(len)) = Board::new(&[0; SIZE - 1]) {
+            assert_eq!(len, SIZE - 1);
+        } else {
+            panic!("unexpected result");
+        }
     }
 
     #[test]
-    #[should_panic(expected = "slice must have length of 81")]
     fn too_long() {
-        Board::new(&[0; SIZE + 1]).unwrap();
+        if let Err(InvalidBoardLength(len)) = Board::new(&[0; SIZE + 1]) {
+            assert_eq!(len, SIZE + 1);
+        } else {
+            panic!("unexpected result");
+        }
     }
 
     #[test]
-    #[should_panic(expected = "invalid value at (2, 1)")]
     fn invalid_value() {
         let mut n = [0; SIZE];
         n[11] = 10;
-        Board::new(&n).unwrap();
+        if let Err(InvalidValue(pt, n)) = Board::new(&n) {
+            assert_eq!(Pt::new(2, 1).unwrap(), pt);
+            assert_eq!(n, 10);
+        } else {
+            panic!("unexpected result");
+        }
     }
 
     #[test]
@@ -266,10 +275,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "invalid value: 10")]
     fn set_invalid_value() {
         let mut b = Board::new(&[1; SIZE]).unwrap();
-        b.set(Pt::new(2, 3).unwrap(), 10).unwrap();
+        let pt = Pt::new(2, 3).unwrap();
+        assert_eq!(InvalidValue(pt, 10), b.set(pt, 10).unwrap_err());
     }
 
     #[test]

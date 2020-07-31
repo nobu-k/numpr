@@ -1,4 +1,5 @@
 use crate::consts::*;
+use crate::error::*;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Pt {
@@ -7,9 +8,9 @@ pub struct Pt {
 }
 
 impl Pt {
-    pub fn new(x: usize, y: usize) -> Result<Self, String> {
+    pub fn new(x: usize, y: usize) -> NumprResult<Self> {
         if x >= WIDTH || y >= HEIGHT {
-            return Err(format!("index out of bounds: ({}, {})", x, y));
+            return NumprError::index_out_of_bounds(x, y);
         }
         Ok(Pt { x, y })
     }
