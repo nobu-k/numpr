@@ -1,4 +1,5 @@
 use crate::board::Board;
+use crate::error::NumprResult;
 use crate::placer::Placer;
 use crate::solver::Solver;
 
@@ -11,7 +12,7 @@ impl NaivePlacer {
 }
 
 impl Placer for NaivePlacer {
-    fn place(self, solver: impl Solver) -> Result<Board, String> {
+    fn place(self, solver: impl Solver) -> NumprResult<Board> {
         solver.solve(&Board::default(), true)
     }
 }

@@ -1,7 +1,8 @@
-use super::board::Board;
+use crate::board::Board;
+use crate::error::NumprResult;
 
 pub trait Solver {
-    fn solve(self, board: &Board, random: bool) -> Result<Board, String>;
+    fn solve(self, board: &Board, random: bool) -> NumprResult<Board>;
 }
 
 /* TODO: can this be abstracted like this?

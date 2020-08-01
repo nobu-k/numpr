@@ -1,4 +1,5 @@
 use crate::board::Board;
+use crate::error::NumprResult;
 use crate::generator::Generator;
 use crate::pt::{Pt, PtIter};
 use crate::solver::Solver;
@@ -21,7 +22,7 @@ impl Generator for NaiveGenerator {
         board: &Board,
         solver_factory: impl Fn() -> S,
         unique_factory: impl Fn() -> U,
-    ) -> Result<Board, String>
+    ) -> NumprResult<Board>
     where
         S: Solver,
         U: UniquenessChecker,

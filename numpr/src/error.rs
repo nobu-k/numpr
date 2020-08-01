@@ -9,6 +9,8 @@ pub enum NumprError {
     InvalidBoardLength(usize),
     InvalidValue(Pt, u8),
     WrongAnswer,
+    MultipleSolutions,
+    Unsolvable,
 }
 
 pub type NumprResult<T> = std::result::Result<T, NumprError>;
@@ -30,6 +32,14 @@ impl NumprError {
     pub fn wrong_answer<T>() -> NumprResult<T> {
         Err(WrongAnswer)
     }
+
+    pub fn multiple_solutions<T>() -> NumprResult<T> {
+        Err(MultipleSolutions)
+    }
+
+    pub fn unsolvable<T>() -> NumprResult<T> {
+        Err(Unsolvable)
+    }
 }
 
 impl std::fmt::Display for NumprError {
@@ -39,6 +49,8 @@ impl std::fmt::Display for NumprError {
             InvalidBoardLength(len) => write!(f, "slice must have length of 81: len = {}", *len),
             InvalidValue(pt, n) => write!(f, "invalid value at ({}, {}): {}", pt.x(), pt.y(), *n),
             WrongAnswer => write!(f, "wrong answer"), // TODO: more details
+            MultipleSolutions => write!(f, "the board has multiple solutions"),
+            Unsolvable => write!(f, "the solution was not found"),
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::board::Board;
 use crate::consts::*;
+use crate::error::NumprResult;
 use crate::placer::Placer;
 use crate::pt::Pt;
 use crate::solver::Solver;
@@ -14,7 +15,7 @@ impl PermutationPlacer {
         Self {}
     }
 
-    fn fill_upper_blocks(&self, b: &mut Board) -> Result<(), String> {
+    fn fill_upper_blocks(&self, b: &mut Board) -> NumprResult<()> {
         let rng = &mut rand::thread_rng();
 
         // Fill the first row
@@ -113,7 +114,7 @@ impl PermutationPlacer {
         Ok(())
     }
 
-    fn fill_left_blocks(&self, b: &mut Board) -> Result<(), String> {
+    fn fill_left_blocks(&self, b: &mut Board) -> NumprResult<()> {
         let rng = &mut rand::thread_rng();
 
         // Fill the 1st col.
@@ -222,7 +223,7 @@ impl PermutationPlacer {
 }
 
 impl Placer for PermutationPlacer {
-    fn place(self, solver: impl Solver) -> Result<Board, String> {
+    fn place(self, solver: impl Solver) -> NumprResult<Board> {
         let mut b = Board::default();
         self.fill_upper_blocks(&mut b)?;
         self.fill_left_blocks(&mut b)?;

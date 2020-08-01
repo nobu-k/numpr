@@ -1,4 +1,5 @@
 use crate::board::Board;
+use crate::error::{NumprError, NumprResult};
 use crate::solver::Solver;
 use crate::unique::UniquenessChecker;
 
@@ -11,7 +12,7 @@ impl NaiveUniquenessChecker {
 }
 
 impl UniquenessChecker for NaiveUniquenessChecker {
-    fn check<S>(self, board: &Board, factory: impl Fn() -> S) -> Result<(), String>
+    fn check<S>(self, board: &Board, factory: impl Fn() -> S) -> NumprResult<()>
     where
         S: Solver,
     {
@@ -23,13 +24,13 @@ impl UniquenessChecker for NaiveUniquenessChecker {
                 let s = factory();
                 if s.solve(&b, false).is_ok() {
                     if next != 0 {
-                        return Err("the board has multiple solutions".to_string());
+                        return NumprError::multiple_solutions();
                     }
                     next = c;
                 }
             }
             if next == 0 {
-                return Err("the solution was not found".to_string());
+                return NumprError::unsolvable();
             }
             b.set(pt, next)?;
         }

@@ -1,3 +1,4 @@
+use crate::error::{NumprError, NumprResult};
 use crate::pt::Pt;
 use crate::Board;
 use crate::Solver;
@@ -13,7 +14,7 @@ impl NaiveSolver {
         Self {}
     }
 
-    fn recurse(&self, b: &mut Board, pt: Pt, random: bool) -> Result<Board, String> {
+    fn recurse(&self, b: &mut Board, pt: Pt, random: bool) -> NumprResult<Board> {
         // Note: precomputing pt and passing it as &[Pt] and [1..] was slower than the current code.
         let next = b.iter_after(pt).find(empty_grid);
 
@@ -29,12 +30,12 @@ impl NaiveSolver {
             }
         }
         b.set(pt, 0)?;
-        return Err("no answer found".to_string());
+        return NumprError::unsolvable();
     }
 }
 
 impl Solver for NaiveSolver {
-    fn solve(self, board: &Board, random: bool) -> Result<Board, String> {
+    fn solve(self, board: &Board, random: bool) -> NumprResult<Board> {
         let mut b = *board;
         match &mut board.iter().find(empty_grid) {
             Some((pt, _)) => self.recurse(&mut b, *pt, random),
