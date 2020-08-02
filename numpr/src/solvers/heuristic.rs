@@ -43,11 +43,6 @@ impl HeuristicSolver {
             .chain(PtIter::block(pt))
             .filter(|p| *p != pt);
         for p in it {
-            // TODO: check if this skip is really fast
-            if self.popcnts[p.index()] == 10 {
-                continue;
-            }
-
             let b = 1 << n;
             let m = (self.masks[p.index()] & b) != 0;
             self.masks[p.index()] &= !b;
