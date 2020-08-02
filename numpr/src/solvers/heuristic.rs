@@ -60,23 +60,30 @@ impl HeuristicSolver {
     }
 
     fn recurse(&mut self, b: &mut Board, mut idx: &mut [u8], random: bool) -> NumprResult<Board> {
-        let mut prev_cnt = 0;
+        let mut min_idx = 0;
         loop {
-            idx[..].sort_by(|l, r| self.popcnts[*l as usize].cmp(&self.popcnts[*r as usize]));
-            let len = idx.len();
-            idx = &mut idx[..(len - prev_cnt)]; // TODO: fix this to work
-            if idx.is_empty() || self.popcnts[idx[0] as usize] != 1 {
+            if idx.is_empty() {
                 break;
             }
 
-            prev_cnt = 0;
-            for i in &idx[..] {
-                let i = *i as usize;
+            let mut k = 0;
+            let mut end = idx.len();
+            let mut m = 10;
+            for _ in 0..idx.len() {
+                let i = idx[k] as usize;
                 if self.popcnts[i] != 1 {
-                    break;
+                    m = if self.popcnts[i] < m {
+                        min_idx = i;
+                        self.popcnts[i]
+                    } else {
+                        m
+                    };
+                    k += 1;
+                    continue;
                 }
-                prev_cnt += 1;
-                // TODO: implement fast log2
+
+                idx.swap(k, end - 1);
+                end -= 1;
                 for bit in 1..=9 {
                     if (self.masks[i] >> bit) == 1 {
                         self.set(b, Pt::new(i % WIDTH, i / WIDTH)?, bit)?;
@@ -84,12 +91,16 @@ impl HeuristicSolver {
                     }
                 }
             }
+            if end == idx.len() {
+                break;
+            }
+            idx = &mut idx[..end];
         }
         if idx.is_empty() {
             return Ok(*b);
         }
 
-        let next = idx[0] as usize;
+        let next = min_idx;
         if self.popcnts[next] == 10 {
             return Ok(*b);
         }
@@ -114,18 +125,27 @@ impl HeuristicSolver {
 
 impl Solver for HeuristicSolver {
     fn solve(mut self, board: &Board, random: bool) -> NumprResult<Board> {
-        let mut idx = [0u8; SIZE];
-        for i in 0..SIZE {
-            idx[i] = i as u8;
-        }
-
         let cnt = self.init(&board)?;
         if cnt == 0 {
             return Ok(*board);
         }
-        idx[..].sort_by(|l, r| self.popcnts[*l as usize].cmp(&self.popcnts[*r as usize]));
+
+        let mut idx = [0u8; SIZE];
+        let idx = &mut idx[..cnt];
+
+        {
+            let mut k = 0;
+            for i in 0..SIZE {
+                if self.popcnts[i] == 10 {
+                    continue;
+                }
+                idx[k] = i as u8;
+                k += 1;
+            }
+        }
+
         let mut board = *board;
-        self.recurse(&mut board, &mut idx[..cnt], random)
+        self.recurse(&mut board, idx, random)
     }
 }
 
