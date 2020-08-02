@@ -38,11 +38,27 @@ impl HeuristicSolver {
     }
 
     fn dec(&mut self, pt: Pt, n: u8) -> NumprResult<()> {
-        let it = PtIter::col(pt)
-            .chain(PtIter::row(pt))
-            .chain(PtIter::block(pt))
-            .filter(|p| *p != pt);
-        for p in it {
+        for p in PtIter::row(pt) {
+            let b = 1 << n;
+            let m = (self.masks[p.index()] & b) != 0;
+            self.masks[p.index()] &= !b;
+            self.popcnts[p.index()] -= m as u8;
+            if self.popcnts[p.index()] == 0 {
+                return NumprError::unsolvable();
+            }
+        }
+
+        for p in PtIter::block(pt) {
+            let b = 1 << n;
+            let m = (self.masks[p.index()] & b) != 0;
+            self.masks[p.index()] &= !b;
+            self.popcnts[p.index()] -= m as u8;
+            if self.popcnts[p.index()] == 0 {
+                return NumprError::unsolvable();
+            }
+        }
+
+        for p in PtIter::col(pt) {
             let b = 1 << n;
             let m = (self.masks[p.index()] & b) != 0;
             self.masks[p.index()] &= !b;
