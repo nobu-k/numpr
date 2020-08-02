@@ -9,6 +9,9 @@ pub struct HeuristicSolver {
     popcnts: [u8; SIZE],
 }
 
+const LOG_TABLE_LOW: [u8; 9] = [0, 1, 2, 0, 3, 0, 0, 0, 4];
+const LOG_TABLE_HIGH: [u8; 9] = [0, 5, 6, 0, 7, 0, 0, 0, 8];
+
 impl HeuristicSolver {
     pub fn new() -> Self {
         Self {
@@ -88,12 +91,11 @@ impl HeuristicSolver {
                 end -= 1;
                 idx.swap(k, end);
 
-                for bit in 1..=9 {
-                    if (self.masks[i] >> bit) == 1 {
-                        self.set(b, Pt::new(i % WIDTH, i / WIDTH)?, bit)?;
-                        break;
-                    }
-                }
+                let m = self.masks[i] >> 1;
+                let bit = LOG_TABLE_LOW[(m & 0xf) as usize]
+                    + LOG_TABLE_HIGH[((m >> 4) & 0xf) as usize]
+                    + ((m >> 8) * 9) as u8;
+                self.set(b, Pt::new(i % WIDTH, i / WIDTH)?, bit)?;
             }
             if end == idx.len() {
                 break;
