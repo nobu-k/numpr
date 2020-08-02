@@ -28,79 +28,109 @@ impl Pt {
     }
 }
 
-enum ScanMode {
-    Col,
-    Row,
-    Block,
-    All,
-}
-
-pub struct PtIter {
-    x: usize,
-    y: usize,
-    i: usize,
-    mode: ScanMode,
-}
+pub struct PtIter {}
 
 impl PtIter {
-    pub fn col(pt: Pt) -> Self {
-        Self {
-            x: 0,
-            y: pt.y,
-            i: 0,
-            mode: ScanMode::Col,
-        }
+    pub fn col(pt: Pt) -> ColIter {
+        ColIter { x: pt.x, y: 0 }
     }
 
-    pub fn row(pt: Pt) -> Self {
-        Self {
-            x: pt.x,
-            y: 0,
-            i: 0,
-            mode: ScanMode::Row,
-        }
+    pub fn row(pt: Pt) -> RowIter {
+        RowIter { x: 0, y: pt.y }
     }
 
-    pub fn block(pt: Pt) -> Self {
-        Self {
+    pub fn block(pt: Pt) -> BlockIter {
+        BlockIter {
             x: pt.x / BLOCK_WIDTH * BLOCK_WIDTH,
             y: pt.y / BLOCK_HEIGHT * BLOCK_HEIGHT,
             i: 0,
-            mode: ScanMode::Block,
         }
     }
 
-    pub fn all() -> Self {
-        Self {
-            x: 0,
-            y: 0,
-            i: 0,
-            mode: ScanMode::All,
-        }
+    pub fn all() -> AllIter {
+        AllIter { i: 0 }
     }
 
-    pub fn all_after(pt: Pt) -> Self {
-        Self {
-            x: 0,
-            y: 0,
+    pub fn all_after(pt: Pt) -> AllIter {
+        AllIter {
             i: pt.y * WIDTH + pt.x + 1,
-            mode: ScanMode::All,
         }
     }
 }
 
-impl Iterator for PtIter {
-    type Item = Pt;
+pub struct ColIter {
+    x: usize,
+    y: usize,
+}
 
+impl Iterator for ColIter {
+    type Item = Pt;
     fn next(&mut self) -> Option<Self::Item> {
-        use ScanMode::*;
-        let (x, y) = match self.mode {
-            Col if self.i < WIDTH => (self.i, self.y),
-            Row if self.i < HEIGHT => (self.x, self.i),
-            Block if self.i < 9 => (self.x + self.i % 3, self.y + self.i / 3),
-            All if self.i < SIZE => (self.i % WIDTH, self.i / WIDTH),
-            _ => return None,
-        };
+        if self.y == HEIGHT {
+            return None;
+        }
+
+        self.y += 1;
+        Some(Pt {
+            x: self.x,
+            y: self.y - 1,
+        })
+    }
+}
+
+pub struct RowIter {
+    x: usize,
+    y: usize,
+}
+
+impl Iterator for RowIter {
+    type Item = Pt;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.x == WIDTH {
+            return None;
+        }
+
+        self.x += 1;
+        Some(Pt {
+            x: self.x - 1,
+            y: self.y,
+        })
+    }
+}
+
+pub struct BlockIter {
+    x: usize,
+    y: usize,
+    i: usize,
+}
+
+impl Iterator for BlockIter {
+    type Item = Pt;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i == BLOCK_SIZE {
+            return None;
+        }
+
+        let x = self.x + self.i % 3;
+        let y = self.y + self.i / 3;
+        self.i += 1;
+        Some(Pt { x, y })
+    }
+}
+
+pub struct AllIter {
+    i: usize,
+}
+
+impl Iterator for AllIter {
+    type Item = Pt;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i == SIZE {
+            return None;
+        }
+
+        let x = self.i % WIDTH;
+        let y = self.i / WIDTH;
         self.i += 1;
         Some(Pt { x, y })
     }

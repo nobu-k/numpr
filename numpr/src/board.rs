@@ -1,6 +1,6 @@
 use crate::consts::*;
 use crate::error::{NumprError, NumprResult};
-use crate::pt::{Pt, PtIter};
+use crate::pt::{AllIter, Pt, PtIter};
 use rand::prelude::*;
 
 // Note: using 4-bits per grid didn't improve the performance at least for
@@ -74,26 +74,21 @@ impl Board {
     }
 
     pub fn validate(&self) -> NumprResult<()> {
-        let convert = |pt| {
-            let it = Iter { pt, b: self };
-            it.map(|(_, n)| n.unwrap_or(0))
-        };
-
         // TODO: return more detailed error information
 
         // Check if each col, row, and block contains 1-9
         for i in 0..9 {
-            self.validate_iter(convert(PtIter::col(Pt::new(i, 0).unwrap())))?;
-            self.validate_iter(convert(PtIter::row(Pt::new(0, i).unwrap())))?;
-            self.validate_iter(convert(PtIter::block(
+            self.validate_iter(PtIter::col(Pt::new(i, 0).unwrap()))?;
+            self.validate_iter(PtIter::row(Pt::new(0, i).unwrap()))?;
+            self.validate_iter(PtIter::block(
                 Pt::new(i % BLOCK_WIDTH, i / BLOCK_WIDTH).unwrap(),
-            )))?;
+            ))?;
         }
         Ok(())
     }
 
-    fn validate_iter(&self, it: impl Iterator<Item = u8>) -> NumprResult<()> {
-        let mask = it.map(|n| 1u32 << n).fold(0, |a, b| a | b);
+    fn validate_iter(&self, it: impl Iterator<Item = Pt>) -> NumprResult<()> {
+        let mask = it.map(|p| 1u32 << self.raw_get(p)).fold(0, |a, b| a | b);
         if mask == 0b11_1111_1110 {
             Ok(())
         } else {
@@ -120,7 +115,7 @@ impl Board {
 }
 
 pub struct Iter<'a> {
-    pt: PtIter,
+    pt: AllIter,
     b: &'a Board,
 }
 
