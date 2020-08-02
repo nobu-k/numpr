@@ -55,7 +55,6 @@ impl HeuristicSolver {
     }
 
     fn recurse(&mut self, b: &mut Board, mut idx: &mut [u8], random: bool) -> NumprResult<Board> {
-        let mut min_idx = 0;
         loop {
             if idx.is_empty() {
                 break;
@@ -63,22 +62,16 @@ impl HeuristicSolver {
 
             let mut k = 0;
             let mut end = idx.len();
-            let mut m = 10;
             for _ in 0..idx.len() {
                 let i = idx[k] as usize;
                 if self.popcnts[i] != 1 {
-                    m = if self.popcnts[i] < m {
-                        min_idx = i;
-                        self.popcnts[i]
-                    } else {
-                        m
-                    };
                     k += 1;
                     continue;
                 }
 
-                idx.swap(k, end - 1);
                 end -= 1;
+                idx.swap(k, end);
+
                 for bit in 1..=9 {
                     if (self.masks[i] >> bit) == 1 {
                         self.set(b, Pt::new(i % WIDTH, i / WIDTH)?, bit)?;
@@ -95,10 +88,9 @@ impl HeuristicSolver {
             return Ok(*b);
         }
 
-        let next = min_idx;
-        if self.popcnts[next] == 10 {
-            return Ok(*b);
-        }
+        let back = idx.len() - 1;
+        let next = idx[back] as usize;
+        idx = &mut idx[..back];
 
         let pt = Pt::new(next % WIDTH, next / WIDTH)?;
         for c in b.candidates(pt, random) {
@@ -155,6 +147,12 @@ mod tests {
         let s = HeuristicSolver::new();
 
         let b = s.solve(&b, false).unwrap();
+        for y in 0..9 {
+            for x in 0..9 {
+                print!("{} ", b.get(Pt::new(x, y).unwrap()).unwrap_or(0));
+            }
+            println!("");
+        }
         b.validate().unwrap();
     }
 
