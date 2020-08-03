@@ -3,6 +3,7 @@ use crate::pt::Pt;
 use crate::Board;
 use crate::Solver;
 
+/// Solves a puzzle with a simple brute-force approach.
 pub struct NaiveSolver {}
 
 fn empty_grid((_, n): &(Pt, Option<u8>)) -> bool {
@@ -10,6 +11,7 @@ fn empty_grid((_, n): &(Pt, Option<u8>)) -> bool {
 }
 
 impl NaiveSolver {
+    /// Returns a new `NaiveSolver`.
     pub fn new() -> Self {
         Self {}
     }

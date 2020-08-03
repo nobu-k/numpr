@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn place() {
         let p = PermutationPlacer::new();
-        let b = p.place(crate::NaiveSolver::new()).unwrap();
+        let b = p.place(crate::solvers::NaiveSolver::new()).unwrap();
         b.validate().unwrap();
     }
 }

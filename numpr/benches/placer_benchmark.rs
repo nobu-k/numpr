@@ -1,5 +1,9 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use numpr::{HeuristicSolver, NaivePlacer, NaiveSolver, PermutationPlacer, Placer};
+use numpr::{
+    placers::{NaivePlacer, PermutationPlacer},
+    solvers::{HeuristicSolver, NaiveSolver},
+    Placer,
+};
 
 pub fn placer(c: &mut Criterion) {
     c.bench_function("NaivePlacer-NaiveSolver", |b| {

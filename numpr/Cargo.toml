@@ -3,6 +3,8 @@ name = "numpr"
 version = "0.1.0"
 authors = ["Nobuyuki Kubota <nobu.k.jp+github@gmail.com>"]
 edition = "2018"
+description = "Utilities to solve, generate, and evaluate Number Place puzzles."
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

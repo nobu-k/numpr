@@ -1,28 +1,29 @@
+//! # numpr
+//!
+//! `numpr` provides utilities to solve, generate, and evaluate number place
+//! puzzles.
+
 mod board;
 mod consts;
-mod error;
+pub mod error;
 mod generator;
-mod generators;
+pub mod generators;
 mod placer;
-mod placers;
-mod pt;
+pub mod placers;
+pub mod pt;
 mod solver;
-mod solvers;
+pub mod solvers;
 mod unique;
-mod uniques;
+pub mod uniques;
 
 pub use board::Board;
 pub use consts::*;
+pub use error::{NumprError, NumprResult};
 pub use generator::Generator;
-pub use generators::NaiveGenerator;
 pub use placer::Placer;
-pub use placers::NaivePlacer;
-pub use placers::PermutationPlacer;
-pub use pt::*;
+pub use pt::{Pt, PtIter};
 pub use solver::Solver;
-pub use solvers::*;
 pub use unique::UniquenessChecker;
-pub use uniques::NaiveUniquenessChecker;
 
 // TODO: reorganize modules. For example, move placer.rs to placers/trait.rs.
 

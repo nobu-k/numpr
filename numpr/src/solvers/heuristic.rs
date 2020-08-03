@@ -164,9 +164,15 @@ mod tests {
 
     #[test]
     fn partially_solve() {
-        let b = NaivePlacer::new().place(NaiveSolver::new()).unwrap();
-        let b = NaiveGenerator::new(crate::consts::SIZE as u32)
-            .generate(&b, || NaiveSolver::new(), || NaiveUniquenessChecker::new())
+        let b = placers::NaivePlacer::new()
+            .place(solvers::NaiveSolver::new())
+            .unwrap();
+        let b = generators::NaiveGenerator::new(crate::consts::SIZE as u32)
+            .generate(
+                &b,
+                || solvers::NaiveSolver::new(),
+                || uniques::NaiveUniquenessChecker::new(),
+            )
             .unwrap();
 
         let s = HeuristicSolver::new();

@@ -3,12 +3,14 @@ use numpr::*;
 
 fn place() -> Board {
     // TODO: replace this with the fastest implementation
-    PermutationPlacer::new().place(NaiveSolver::new()).unwrap()
+    placers::PermutationPlacer::new()
+        .place(solvers::NaiveSolver::new())
+        .unwrap()
 }
 
 fn solve(b: Board) {
     // TODO: replace this with the fastest implementation
-    NaiveSolver::new()
+    solvers::NaiveSolver::new()
         .solve(&b, false)
         .unwrap()
         .validate()
@@ -19,8 +21,12 @@ pub fn generator(c: &mut Criterion) {
     c.bench_function("AllNaive", |b| {
         b.iter(|| {
             let b = place();
-            let g = NaiveGenerator::new(black_box(81))
-                .generate(&b, || NaiveSolver::new(), || NaiveUniquenessChecker::new())
+            let g = generators::NaiveGenerator::new(black_box(81))
+                .generate(
+                    &b,
+                    || solvers::NaiveSolver::new(),
+                    || uniques::NaiveUniquenessChecker::new(),
+                )
                 .unwrap();
             solve(g);
         });
@@ -29,11 +35,11 @@ pub fn generator(c: &mut Criterion) {
     c.bench_function("HeuristicSolver-And-Naive", |b| {
         b.iter(|| {
             let b = place();
-            let g = NaiveGenerator::new(black_box(81))
+            let g = generators::NaiveGenerator::new(black_box(81))
                 .generate(
                     &b,
-                    || HeuristicSolver::new(),
-                    || NaiveUniquenessChecker::new(),
+                    || solvers::HeuristicSolver::new(),
+                    || uniques::NaiveUniquenessChecker::new(),
                 )
                 .unwrap();
             solve(g);
