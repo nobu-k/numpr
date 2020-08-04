@@ -4,14 +4,17 @@ use crate::pt::{Pt, PtIter};
 use crate::Board;
 use crate::Solver;
 
+/// HeuristicSolver tries to put numbers in grids having one candidate.
 pub struct HeuristicSolver {
     masks: [u16; SIZE],
 }
 
+// Tables to compute log2 for integers that are exactly 2^n (i.e. only one of the bits is 1)
 const LOG_TABLE_LOW: [u8; 9] = [0, 1, 2, 0, 3, 0, 0, 0, 4];
 const LOG_TABLE_HIGH: [u8; 9] = [0, 5, 6, 0, 7, 0, 0, 0, 8];
 
 impl HeuristicSolver {
+    /// Returns the initialized solver.
     pub fn new() -> Self {
         Self {
             masks: [0b11_1111_1110; SIZE],
