@@ -209,7 +209,6 @@ impl PermutationPlacer {
         // FIXME: Filling the 3rd col somehow slows down NaiveSolver. Also, only
         // filling the 1st col slows it down 2000%. Investigate why.
 
-        /*
         // Fill the 3rd col with Board::candidates.
         for (i, c) in b.candidates(Pt::new(2, 3)?, true).into_iter().enumerate() {
             b.set(Pt::new(2, i + 3)?, c)?;
@@ -217,7 +216,7 @@ impl PermutationPlacer {
         for (i, c) in b.candidates(Pt::new(2, 6)?, true).into_iter().enumerate() {
             b.set(Pt::new(2, i + 6)?, c)?;
         }
-        */
+
         Ok(())
     }
 }

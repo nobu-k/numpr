@@ -18,21 +18,24 @@ impl UniquenessChecker for NaiveUniquenessChecker {
     {
         let mut b = *board;
         for (pt, _) in board.iter().filter(|(_, n)| n.is_none()) {
-            let mut next = 0;
+            let mut found = 0;
             for c in board.candidates(pt, false) {
                 b.set(pt, c)?;
                 let s = factory();
                 if s.solve(&b, false).is_ok() {
-                    if next != 0 {
+                    if found != 0 {
                         return NumprError::multiple_solutions();
                     }
-                    next = c;
+                    found = c;
                 }
             }
-            if next == 0 {
+            if found == 0 {
                 return NumprError::unsolvable();
             }
-            b.set(pt, next)?;
+
+            // Filling the grid with the answer could resolve a possible
+            // ambiguity in another grid. So, it has to be reset to vacant.
+            b.set(pt, 0)?;
         }
         Ok(())
     }
@@ -41,33 +44,33 @@ impl UniquenessChecker for NaiveUniquenessChecker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::solvers::NaiveSolver;
+    use crate::solvers::HeuristicSolver;
 
     #[test]
     fn default() {
         let b = Board::default();
         let u = NaiveUniquenessChecker::new();
-        let err = u.check(&b, || NaiveSolver::new());
+        let err = u.check(&b, || HeuristicSolver::new());
         assert!(err.is_err());
     }
 
     #[test]
     fn solved() {
         let b = Board::default();
-        let b = NaiveSolver::new().solve(&b, true).unwrap();
+        let b = HeuristicSolver::new().solve(&b, true).unwrap();
         let u = NaiveUniquenessChecker::new();
-        u.check(&b, || NaiveSolver::new()).unwrap();
+        u.check(&b, || HeuristicSolver::new()).unwrap();
     }
 
     #[test]
     fn one_empty_grid() {
         let b = Board::default();
-        let mut b = NaiveSolver::new().solve(&b, true).unwrap();
+        let mut b = HeuristicSolver::new().solve(&b, true).unwrap();
 
         let p = || (rand::random::<f64>() * 9.) as usize;
         b.set(crate::pt::Pt::new(p(), p()).unwrap(), 0).unwrap();
 
         let u = NaiveUniquenessChecker::new();
-        u.check(&b, || NaiveSolver::new()).unwrap();
+        u.check(&b, || HeuristicSolver::new()).unwrap();
     }
 }

@@ -18,6 +18,8 @@ fn solve(b: Board) {
 }
 
 pub fn generator(c: &mut Criterion) {
+    /* This became very slow, by making naive uniqueness checker stricter. So,
+    this is currently disabled.
     c.bench_function("AllNaive", |b| {
         b.iter(|| {
             let b = place();
@@ -31,6 +33,7 @@ pub fn generator(c: &mut Criterion) {
             solve(g);
         });
     });
+    */
 
     c.bench_function("HeuristicSolver-And-Naive", |b| {
         b.iter(|| {

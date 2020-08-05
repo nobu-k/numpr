@@ -55,17 +55,21 @@ mod tests {
     use super::*;
     use crate::placer::Placer;
     use crate::placers::NaivePlacer;
-    use crate::solvers::NaiveSolver;
+    use crate::solvers::HeuristicSolver;
     use crate::uniques::NaiveUniquenessChecker;
 
     #[test]
     fn generate() {
-        let b = NaivePlacer::new().place(NaiveSolver::new()).unwrap();
+        let b = NaivePlacer::new().place(HeuristicSolver::new()).unwrap();
         let g = NaiveGenerator::new(crate::consts::SIZE as u32)
-            .generate(&b, || NaiveSolver::new(), || NaiveUniquenessChecker::new())
+            .generate(
+                &b,
+                || HeuristicSolver::new(),
+                || NaiveUniquenessChecker::new(),
+            )
             .unwrap();
 
-        let answer = NaiveSolver::new().solve(&g, true).unwrap();
+        let answer = HeuristicSolver::new().solve(&g, true).unwrap();
         assert!(b.iter().eq(answer.iter()));
     }
 }
