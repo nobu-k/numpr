@@ -3,6 +3,8 @@ use crate::error::{NumprError, NumprResult};
 use crate::solver::Solver;
 use crate::unique::UniquenessChecker;
 
+/// Checks if the given puzzle has a unique solution by putting all possible
+/// candidates.
 pub struct NaiveUniquenessChecker {}
 
 impl NaiveUniquenessChecker {
@@ -16,6 +18,10 @@ impl UniquenessChecker for NaiveUniquenessChecker {
     where
         S: Solver,
     {
+        // TODO: use hash with something like LRU cache to detect boards that
+        // has already been checked. Storing ones having more empty grids should
+        // be cached rather than recent usage? Maybe it's worth implementing a
+        // new type?
         let mut b = *board;
         for (pt, _) in board.iter().filter(|(_, n)| n.is_none()) {
             let mut found = 0;
