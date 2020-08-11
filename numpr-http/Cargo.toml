@@ -1,0 +1,14 @@
+[package]
+name = "numpr-http"
+version = "0.1.0"
+authors = ["Nobuyuki Kubota <nobu.k.jp+github@gmail.com>"]
+edition = "2018"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+numpr = { path = "../numpr", version = "^0.1.0" }
+hyper = "*"
+tokio = { version = "*", features = ["full"] }
+futures = "^0.3"
