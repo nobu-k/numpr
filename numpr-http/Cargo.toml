@@ -12,3 +12,6 @@ numpr = { path = "../numpr", version = "^0.1.0" }
 hyper = "*"
 tokio = { version = "*", features = ["full"] }
 futures = "^0.3"
+tracing = "*"
+tracing-subscriber = { version = "*", features = ["fmt", "json", "tracing-log"] }
+tracing-futures = "*"
