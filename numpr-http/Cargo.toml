@@ -15,3 +15,4 @@ futures = "^0.3"
 tracing = "*"
 tracing-subscriber = { version = "*", features = ["fmt", "json", "tracing-log"] }
 tracing-futures = "*"
+http = "*"

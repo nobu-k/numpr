@@ -5,9 +5,20 @@ use std::net::SocketAddr;
 use tracing::{info, instrument};
 use tracing_subscriber::fmt;
 
-#[instrument(skip(_req))]
-async fn hello_world(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    Ok(Response::new("Hello, World".into()))
+#[instrument(skip(req))]
+async fn hello_world(req: Request<Body>) -> http::Result<Response<Body>> {
+    let uri = req.uri();
+    match uri.path() {
+        "/problems" if req.method() == hyper::Method::GET => {
+            Ok(Response::new("Hello, World".into()))
+        }
+        "/problems" if req.method() == hyper::Method::POST => Response::builder()
+            .status(http::StatusCode::INTERNAL_SERVER_ERROR)
+            .body("Not implemented yet".into()),
+        _ => Response::builder()
+            .status(http::StatusCode::NOT_FOUND)
+            .body("Not Found".into()),
+    }
 }
 
 #[tokio::main]

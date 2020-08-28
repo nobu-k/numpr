@@ -660,6 +660,7 @@ name = "numpr-http"
 version = "0.1.0"
 dependencies = [
  "futures",
+ "http",
  "hyper",
  "numpr",
  "tokio",
